@@ -30,10 +30,11 @@ class Result():
 
     def _parse_meta(self, table, round_):
         clean = lambda x: int(str(x).replace('\xa0', ''))
-        table = table[['Unnamed: 0', 'Nombre']].iloc[0:4].set_index('Unnamed: 0').T
+        table = table[['Unnamed: 0', 'Nombre']].iloc[0:5].set_index('Unnamed: 0').T
         meta_cols = {'Inscrits': 'registered', 'Votants': 'votes',
                      'Blancs ou nuls': 'blanks_or_nulls',
-                     'Blancs': 'blanks_or_nulls',
+                     'Blancs': 'blanks',
+                     'Nuls': 'nulls',
                      'Abstentions': 'abstentions'}
         table = table.rename(columns=meta_cols)
         table['round'] = round_
@@ -41,7 +42,8 @@ class Result():
         table.columns.name = None
         table['registered'] = table['registered'].apply(clean)
         table['votes'] = table['votes'].apply(clean)
-        table['blanks_or_nulls'] = table['blanks_or_nulls'].apply(clean)
+        table['blanks'] = table['blanks'].apply(clean)
+        table['nulls'] = table['nulls'].apply(clean)
         table['abstentions'] = table['abstentions'].apply(clean)
 
         return table
