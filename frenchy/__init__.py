@@ -8,10 +8,14 @@ def get_departement_results(base_url):
     departements = [(x['value'], x.text,) for x in s.select('select option[value]') if x['value']!='#']
     results = {}
     for url,name in departements:
-        r = get(base_url.replace('index.html', url))
-        r.meta['departement']=name
-        r.results['departement']=name
-        results[name] = r
+        u = base_url.replace('index.html', url)
+        try:
+            r = get(u)
+            r.meta['departement']=name
+            r.results['departement']=name
+            results[name] = r
+        except Exception as e:
+            print(u, e)
     return {'results': pd.concat([x.results for x in results.values()]),
             'meta': pd.concat([x.meta for x in results.values()]),
             }

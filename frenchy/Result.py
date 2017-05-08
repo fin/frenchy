@@ -4,23 +4,32 @@ import math
 class Result():
     def __init__(self, url):
         self.url = url
-        tables = pd.read_html(self.url, header=0, encoding='utf8', decimal=',',
-                              thousands=' ')
-        self._parse([x for x in tables if not x.empty])
+        tables = pd.read_html(self.url, header=0, encoding='iso-8859-15', decimal=',',
+                thousands=' ')
+        try:
+            self._parse([x for x in tables if not x.empty])
+        except Exception as e:
+            print('ERROR IN PARSE', self.url)
+            for t in tables:
+                print(t.head(2))
+            raise e
 
     def _parse(self, tables):
         rounds = math.floor(len(tables)/2)
         #results_round1 = self._parse_results(tables[3], 1)
         #results_round2 = self._parse_results(tables[1], 2)
-        self.results = pd.concat([self._parse_results(t, rounds-i) for i,t in enumerate(tables[0::2])])
+        resulttables = [x for x in tables if 'Liste des candidats' in x.columns]
+        self.results = pd.concat([self._parse_results(t, rounds-i) for i,t in enumerate(resulttables)])
 
         #meta_round1 = self._parse_meta(tables[2], 1)
         #meta_round2 = self._parse_meta(tables[0], 2)
         #self.meta = pd.concat([meta_round1, meta_round2])
-        self.meta = pd.concat([self._parse_meta(t, rounds-i) for i,t in enumerate(tables[1::2])])
+        metatables = [x for x in tables if 'Nombre' in x.columns]
+
+        self.meta = pd.concat([self._parse_meta(t, rounds-i) for i,t in enumerate(metatables)])
 
     def _parse_results(self, table, round_):
-        results_cols = {'Liste des candidats ': 'candidate', 'Voix': 'votes'}
+        results_cols = {'Liste des candidats': 'candidate', 'Voix': 'votes'}
         table = table.rename(columns=results_cols)
         table['candidate'] = table['candidate'].str.replace('\xa0', ' ')
         table['round'] = round_
